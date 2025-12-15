@@ -1,0 +1,270 @@
+@font-face{
+  font-family: "MartinaPlantijn";
+  src: url("fonts/test-martina-plantijn-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face{
+  font-family: "MartinaPlantijn";
+  src: url("fonts/test-martina-plantijn-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face{
+  font-family: "RobotoMonoLocal";
+  src: url("fonts/roboto-mono-v31-latin-regular.woff2") format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root{
+  --mono-size: calc(0.45rem + 0.3vw);
+  --mono-size-mobile: calc(0.6rem + 0.4vw);
+  /* circle character size - change this to adjus  const minGapSize = sampleFontSize * 30; // Adjust this multiplier to control gap size  const minGapSize = sampleFontSize * 0.8; // Adjust this multiplier to control gap size  const minGapSize = sampleFontSize * 0.8; // Adjust this multiplier to control gap size  const minGapSize = sampleFontSize * 0.8; // Adjust this multiplier to control gap sizet curved text size */
+  --circle-big-char-size: calc(0.6rem + 0.7vw);     /* Increase this value for bigger text in the circle */
+}
+
+/* Basic reset */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+body{
+  min-height:100vh;
+  font-family: "RobotoMonoLocal", monospace;
+  background: #f7f7f7;
+  color:#111;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* stage centers everything on screen */
+.stage{
+  position:relative;
+  height:100vh;
+  width:100vw;
+  overflow:hidden;
+}
+
+/* Project background image - fullscreen behind everything */
+.project-background{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  opacity:0;
+  z-index:0;
+  pointer-events:none;
+}
+.project-background.active{
+  opacity:1;
+}
+
+/* mono texts left / center / right - vertically centered */
+.mono{
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  font-family:"RobotoMonoLocal", monospace;
+  font-size:var(--mono-size);
+  font-weight:550;
+  color:#ffffff;
+  mix-blend-mode:difference;
+  letter-spacing:0.04em;
+  white-space:pre-wrap;
+  z-index:10;
+}
+.mono.left{
+  left:2.5vw;
+  text-align:left;
+}
+.mono.right{
+  right:2.5vw;
+  text-align:right;
+}
+.mono.center{
+  left:50%;
+  transform:translate(-50%,-50%);
+  max-width:40ch;
+  text-align:center;
+  line-height:1.3;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Project arrow - appears below center text when project is selected */
+.project-arrow{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, calc(-50% + 3rem));
+  color:#ffffff;
+  mix-blend-mode:difference;
+  z-index:10;
+  cursor:pointer;
+  text-decoration:none;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  opacity:0;
+}
+.project-arrow svg{
+  display:block;
+  width:15px;
+  height:24px;
+}
+
+/* circles container that holds all circular text elements */
+.circles{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(80vmin, 90vw);
+  height:min(80vmin, 90vw);
+  pointer-events:none; /* items will override pointer-events for clicks */
+  mix-blend-mode:difference;
+  z-index:5;
+}
+
+/* SVG text opacity - default 100%, but 50% when something is selected */
+.circles svg text{
+  opacity:1;
+  transition:opacity 0.3s ease-in-out;
+}
+/* When any text has active class, make non-active texts 50% opacity */
+.circles svg text.active ~ text:not(.active),
+.circles:has(text.active) svg text:not(.active){
+  opacity:0.5;
+}
+.circles svg text.active{
+  opacity:1;
+}
+
+/* Inner circles container */
+.inner-circles{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+  height:100%;
+  transition:opacity 0.3s ease-in-out;
+  mix-blend-mode:difference;
+}
+
+/* Inner circle text styling */
+.inner-circle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+.inner-circles svg text{
+  font-family:"MartinaPlantijn", serif;
+  font-style:italic;
+  fill:#ffffff;
+  opacity:1;
+}
+
+/* each separate circle is absolutely centered inside .circles */
+.circle{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+/* per-item base styling */
+.circle-item{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform-origin:center center;
+  pointer-events:auto;
+  cursor:pointer;
+  user-select:none;
+  color:#b8b8b8;
+  transition:transform 0.9s cubic-bezier(.2,.9,.2,1), color .35s;
+}
+
+/* individual character styling */
+.circle-item .char {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+  transition: transform 0.9s cubic-bezier(.2,.9,.2,1);
+  font-family: "MartinaPlantijn", serif;
+  font-size: var(--circle-big-char-size, 1.6rem);
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+/* circle typography */
+.circle .circle-item{
+  font-family:"MartinaPlantijn", serif;
+  font-size: var(--circle-big-char-size);
+  letter-spacing:0.019em;
+  color:#ffffff;
+  mix-blend-mode:difference;
+  text-transform:uppercase;
+  text-align: center;
+}
+.circle .circle-item .sub{
+  display:block;
+  font-family:"MartinaPlantijn", serif;
+  font-size:calc(0.6rem + 0.25vw);
+  font-style:italic;
+  margin-top:0.2rem;
+  letter-spacing:0.02em;
+  color:#ffffff;
+  mix-blend-mode:difference;
+  transform: translateY(0.2rem);
+    text-align: center;
+
+}
+
+
+
+/* active / hovered state */
+.circle-item:hover,
+.circle-item.active{
+  color:#111;
+}
+
+/* make sure clicks are allowed */
+.circle-item{pointer-events:auto}
+
+/* responsive tweaks */
+@media (max-width:700px){
+  .mono.left,.mono.right{display:none}
+  .mono.center{max-width:85vw;font-size:var(--mono-size-mobile)}
+  .mono{font-size:var(--mono-size-mobile)}
+  .circle.big .circle-item{font-size:calc(1.2rem + 1vw)}
+}
+
+/* central invisible block so circles center visually */
+.center-brand{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:10vmin;
+  height:10vmin;
+  pointer-events:none;
+  border-radius:50%;
+}

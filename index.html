@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portfolio Landing — Circular Menu</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <main class="stage">
+    <!-- Background image containers for crossfade -->
+    <div class="project-background" id="projectBackground1"></div>
+    <div class="project-background" id="projectBackground2"></div>
+
+    <!-- left / center / right mono labels -->
+    <div class="mono left">MARIE SCHÜTZ</div>
+    <div class="mono center">WORK</div>
+    <a href="#" class="project-arrow" id="projectArrow" style="display: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 12L19 12M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <div class="mono right">ABOUT</div>
+
+    <!-- Circles wrapper (centered on screen) -->
+    <div class="circles" id="circlesRoot">
+      <!-- Main circle -->
+      <div class="circle" id="bigCircle" data-radius-factor="1.1" data-gap-mode="none">
+        <div class="circle-item">FASHION SHOW 2025</div>
+        <div class="circle-item">VINYLS FOR BEXXX</div>
+        <div class="circle-item">AXIS MUSIC FESTIVAL</div>
+        <div class="circle-item">SYSTEMATIC POISON</div>
+        <div class="circle-item">FOLIO MAGAZIN</div>
+        <div class="circle-item">DADDY ISSUES</div>
+        <div class="circle-item">FUN STUFF</div>
+        <div class="circle-item">TRUTH</div>
+        <div class="circle-item">PROCESS JOURNAL</div>
+      </div>
+      
+      <!-- Inner detail circles (hidden by default) -->
+      <div class="inner-circles" id="innerCircles" style="opacity: 0; pointer-events: none;"></div>
+    </div>
+
+    <!-- center label (keeps vertically centered) -->
+    <div class="center-brand"> </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
