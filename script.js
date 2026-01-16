@@ -1,4 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
+  /*
+   * PROJECT NAME CONFIGURATION:
+   * To add or rename projects, update the project names in TWO places:
+   * 
+   * 1. HTML (index.html): Change the text inside <div class="circle-item">PROJECT NAME</div>
+   * 2. JavaScript (below): Update the matching keys in these configuration objects:
+   *    - projectDescriptions
+   *    - projectImages
+   *    - projectDetailImages
+   *    - innerCirclesConfig
+   * 
+   * IMPORTANT: The project names must match EXACTLY (case-sensitive) across all locations.
+   * The system automatically connects them by matching the text.
+   */
+  
+  // Prevent any default navigation behavior
+  window.addEventListener('beforeunload', (e) => {
+    if (isDetailViewActive) {
+      e.preventDefault();
+      return;
+    }
+  });
+  
+  // Set initial state to prevent reload issues
+  if (!window.history.state) {
+    window.history.replaceState({ view: 'circles' }, '', window.location.pathname);
+  }
+  
+  // Clear any hash on initial page load
+  if (window.location.hash) {
+    window.history.replaceState({ view: 'circles' }, '', window.location.pathname);
+  }
+
   const ROOT = document.querySelector(".circles");
   if (!ROOT) return;
 
@@ -6,33 +39,201 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // default start angle for the circle (radians)
   const DEFAULT_START_ANGLE = 0;
-  // rotation speed in seconds (change this to adjust animation speed)
+  // rotation speed in seconds (change this to adjust animation speed: 5, 6, 7, 8, 9, or 10)
   const ROTATION_SPEED_SECONDS = 6;
+  // distance between text and arrow (as fraction of viewport height: 0.03 = 3vh)
+  const ARROW_TEXT_GAP = 0.04;
 
   // Project descriptions - customize these texts for each project
   const projectDescriptions = {
-    "FASHION SHOW 2025": "A COMPREHENSIVE VISUAL IDENTITY FOR THE 2025 FASHION SHOWCASE, FEATURING BOLD TYPOGRAPHY AND DYNAMIC LAYOUTS.",
-    "VINYLS FOR BEXXX": "CUSTOM VINYL COVER DESIGNS MERGING EXPERIMENTAL AESTHETICS WITH CONTEMPORARY MUSIC CULTURE.",
-    "AXIS MUSIC FESTIVAL": "BRAND IDENTITY AND PROMOTIONAL MATERIALS FOR AN IMMERSIVE ELECTRONIC MUSIC FESTIVAL EXPERIENCE.",
-    "SYSTEMATIC POISON": "AN EXPERIMENTAL EDITORIAL PROJECT EXPLORING THEMES OF TOXICITY IN MODERN SYSTEMS THROUGH VISUAL STORYTELLING.",
-    "FOLIO MAGAZIN": "EDITORIAL DESIGN FOR A CONTEMPORARY ARTS AND CULTURE MAGAZINE FEATURING INNOVATIVE LAYOUT SOLUTIONS.",
-    "DADDY ISSUES": "A PROVOCATIVE ZINE SERIES EXAMINING CONTEMPORARY RELATIONSHIPS THROUGH GRAPHIC DESIGN AND TYPOGRAPHY.",
-    "FUN STUFF": "A COLLECTION OF EXPERIMENTAL DESIGN PROJECTS, PERSONAL EXPLORATIONS, AND PLAYFUL VISUAL EXPERIMENTS.",
-    "TRUTH": "A RESEARCH-DRIVEN DESIGN PROJECT INVESTIGATING THE VISUAL LANGUAGE OF TRUTH AND AUTHENTICITY.",
-    "PROCESS JOURNAL": "DOCUMENTATION OF CREATIVE PROCESSES, SKETCHES, AND BEHIND-THE-SCENES INSIGHTS INTO DESIGN METHODOLOGY."
+    "FASHION SHOW 2025": "VISUAL IDENTITY PROPOSAL FOR THE SHOW OF FASHION DESIGN CLASS OF THE UNIVERSITY OF APPLIED ARTS VIENNA",
+    "TRUTH": "BRANDING FOR ‘DESIGN AND NARRATIVE MEDIA’S 2025 EXHIBITION\n‘TRUTH: THE LIES WE LIVE BY’",
+    "VINYLS FOR BEXXX": "VINYL COVERS FOR SINGER AND SONGWRITER BEXXX",
+    "PROCESS JOURNAL": "BOOK DOCUMENTING THE DEVELOPMENT OF THE COLLABORATIVE EXHIBITION PROJECT “COMMON SOIL”",
+    "AXIS FESTIVAL": "VISUAL IDENTITY FOR A FICTIONAL FESTIVAL FOR CONTEMPORARY MUSIC AND DANCE",
+    "DISPUTED TERRITORIES": "INTERACTIVE INCOMPLETE MAP OF THE WORLD’S DISPUTED TERRITORIES",
+    "FUN STUFF": "TOO SMALL FOR A SPOT IN THE CIRCLE, TOO COOL TO HIDE",
+    "GEWERBEPARK SÜD": "QUARTET GAME HONORING THE VAST SHOPPING LANDSCAPE OF LOWER AUSTRIA"
+  };
+
+  // ABOUT text - customize this
+  const ABOUT_TEXT = "HELLO I’M MARIE.\nI’M STUDYING GRAPHIC DESIGN AT UNIVERSITY OF APPLIED ARTS VIENNA. \nRIGHT NOW I’M BASED IN LONDON.\nI LIKE DELICIOUS FONTS, RESEARCH AND CONCEPTUAL DESIGN.\n AND EMAILS. I LOOOOVE EMAILS :)\n\nMARIE-SCHUETZ@GMX.AT";
+
+  // Project detail page descriptions (shown when project is opened)
+  // If not specified, the main description will be used
+  const projectDetailDescriptions = {
+    "FASHION SHOW 2025": "THIS PROJECT – LIKE A GOOD PAIR OF BLACK CROCS – IS FUN, VERSATILE\nAND ALREADY A CLASSIC. THE PROPOSAL SADLY DIDN’T WIN ANGEWANDTES NEXT\nTOP MODEL, BUT IF YOU NEED 147 DIFFERENT DESIGN APPLICATIONS IN FORM OF MOCKUPS, HIT ME UP.",
+    "TRUTH": "REAL EYES REALIZE REAL LIES.\nTHIS LOGO IS DESIGNED TO TURN HEADS. (TURN YOUR HEAD ;) (ITS AN AMBIGRAM.)",
+    "VINYLS FOR BEXXX": "I LOVE MUSIC <3",
+    "PROCESS JOURNAL": "EVEN THOUGH YOU WONT FIND ANY ‘DEAR DIARIES’ IN THIS JOURNAL, THIS BOOK STILL VERY MUCH COMES FROM THE HEART.\n IT'S A LONDON-VIENNA COPRODUCTION. AS IN: I’M FROM VIENNA BUT WORKED ON IT IN LONDON.",
+    "AXIS FESTIVAL": "'ITS A VERY POST CLUB POST AMBIENT POST POST ELECTRONIC MIX OF JAPANESE PROGRESSIVE NOISE AND HUNGARIAN EDM WITH A TOUCH OF DECONSTRUCTED CLUB BUT ALSO JAZZ. IDK, IT’S PROBABLY TOO NICHE FOR YOU.. ANYWAYS!' :)",
+    "DISPUTED TERRITORIES": "MAPS AS TOOLS OF POWER FASCINATE ME. THEY CAN BE USED BOTH FOR POLITICAL VIOLENCE AND FOR RESISTANCE. THE DRAWING OF MAPS SHAPES REALITY AS WE KNOW IT. MY ONGOING OBSESSION WITH CARTOGRAPHY HAS PRODUCED ONE PROJECT SO FAR: AN INTERACTIVE MAP SHOWING AND EDUCATING ON DISPUTED TERRITORIES AROUND THE WORLD. BECAUSE THERE ARE A LOT. LIKE … A LOT.\n\n THIS IS STILL A WORK IN PROGRESS AND I AM BUILDING AS I GO. MY GOAL IS TO COLLECT ALL MY ACCUMULATED KNOWLEDGE IN A PRINTED PUBLICATION. \n SOME DAY. MAYBE.",
+    "FUN STUFF": "SOME PROJECTS ARE THE FRIENDS YOU MADE ALONG THE WAY.",
+    "GEWERBEPARK SÜD": "CAUTION! THIS CARD GAME CONTAINS HAUNTING STRIPMALL MEMORIES FROM YOUR SUBURBIAN CHILDHOOD. SIDE EFFECTS\nMAY INCLUDE: COLD SWEATS, INSOMNIA AND MUSCLE SPASMS (FROM CRINGING\nTOO HARD…). "
   };
 
   // Project background images - add your image paths here
   const projectImages = {
-    "FASHION SHOW 2025": "images/fashion-show-2025.jpg",
-    "VINYLS FOR BEXXX": "images/vinyls-bexxx.jpg",
-    "AXIS MUSIC FESTIVAL": "images/axis-festival.png",
-    "SYSTEMATIC POISON": "images/systematic-poison.jpg",
-    "FOLIO MAGAZIN": "images/folio-magazin.jpg",
-    "DADDY ISSUES": "images/daddy-issues.jpg",
-    "FUN STUFF": "images/fun-stuff.jpg",
-    "TRUTH": "images/truth.jpg",
-    "PROCESS JOURNAL": "images/process-journal.jpg"
+    "FASHION SHOW 2025": "images/fashion-show-runway.png",
+    "TRUTH": "images/truth_background.jpg",
+    "VINYLS FOR BEXXX": "images/vinyls_background.jpg",
+    "PROCESS JOURNAL": "images/PJ_background2.jpg",
+    "AXIS FESTIVAL": "images/Axis_background.jpg",
+    "DISPUTED TERRITORIES": "images/DT_background.jpg",
+    "FUN STUFF": "images/funstuff_background.jpg",
+    "GEWERBEPARK SÜD": "images/GS_background2.jpg"
+  };
+
+  // Project detail page images configuration
+  // Add images for each project's two-column layout
+  // Each image needs: src (path), size (40-100 for width percentage), alt (description)
+  const projectDetailImages = {
+    "FASHION SHOW 2025": {
+      leftColumn: [
+         { src: {
+        sequence: true,
+        folder: "images/modeklasse_animation",
+        frameCount: 77,
+        prefix: "modeklasse_animation_",
+        digits: 5,
+        extension: "png",
+        startIndex: 0,
+        fps: 24,
+        loop: true,
+        alt: "Modeklasse Animation"
+      },
+      size: 75,
+      alt: "Axis Music Festival"
+    },
+        { src: "images/Animation_quer.mp4", size: 80, alt: "Fashion Show 2025", fullWidth: true, insertAfter: 1 },
+        { src: "images/plakate_alle.png", size: 80, alt: "Fashion Show 2025", fullWidth: true, insertAfter: 1 },
+        { src: "images/merch.png", size: 75, alt: "Fashion Show 2025" },
+                { src: "images/modeklasse_banner1.jpg", size: 75, alt: "Fashion Show 2025" }
+
+      ],
+      rightColumn: [
+                { src: "images/modeklasse_poster_mockup.jpg", size: 95, alt: "Fashion Show 2025", },
+
+        { src: "images/modeklasse_backdrop.jpg", size: 75, alt: "Fashion Show 2025" },
+              { src: "images/modeklasse_keychains.png", size: 85, alt: "Fashion Show 2025" }
+
+      ]
+    },
+    "TRUTH": {
+      leftColumn: [
+        { src: "images/truth_leiter.jpg", size: 90, alt: "Truth" },
+                { src: "images/truth_detail.jpg", size: 70, alt: "Truth", fullWidth: true, insertAfter: 1 },
+        { src: "images/siebdruck_spray.jpg", size: 55, alt: "Truth" },
+                { src: "images/truth_hand.jpg", size: 80, alt: "Truth" }
+
+      ],
+      rightColumn: [
+        { src: "images/Some_Animation_final.mp4", size: 70, alt: "Truth" },
+        { src: "images/siebdruck.mp4", size: 85, alt: "Truth", noSound: true },
+                { src: "images/Poster_aufzug.mp4", size: 80, alt: "Truth", noSound: true }
+
+      ]
+    },
+    "VINYLS FOR BEXXX": {
+      leftColumn: [
+        { src: "images/ode_vorne.jpg", size: 80, alt: "Vinyls for Rebecca" },
+        { src: "images/ode_mockup.jpg", size: 70, alt: "Vinyls for Rebecca", fullWidth: true, insertAfter: 1 },
+        { src: "images/techno_vorne.jpg", size: 80, alt: "Vinyls for Rebecca" },
+
+      ],
+      rightColumn: [
+        { src: "images/ode_hinten.jpg", size: 80, alt: "Vinyls for Rebecca" },
+        { src: "images/techno_hinten.jpg", size: 80, alt: "Vinyls for Rebecca" }
+      ]
+    },
+    "AXIS FESTIVAL": {
+      leftColumn: [
+        { src: "images/Axis_Poster2.png", size: 80, alt: "Axis Music Festival" },
+        { src: "images/AXIS_animation.mp4", size: 50, alt: "Axis Music Festival", fullWidth: true, insertAfter: 1 },
+        { src: "images/blue-poster2.png", size: 80, alt: "Axis Music Festival", fullWidth: true,  insertAfter: 2 },
+      ],
+      rightColumn: [
+        { src: {
+        sequence: true,
+        folder: "images/axis logo_ drehung",
+        frameCount: 120,
+        prefix: "axis logo_ drehung_",
+        digits: 5,
+        extension: "png",
+        startIndex: 0,
+        fps: 30,
+        loop: true,
+        alt: "Axis Logo Animation"
+      },
+      size: 80,
+      alt: "Axis Music Festival"
+    },
+    ]
+    },
+    
+    "DISPUTED TERRITORIES": {
+      leftColumn: [
+        { src: "images/karte.mp4", size: 80, alt: "Disputed Territories", noSound: true }
+      ],
+      rightColumn: [
+        { src: "images/pad.mp4", size: 80, alt: "Disputed Territories", noSound: true }
+      ]
+    },
+    "FUN STUFF": {
+      leftColumn: [
+        { src: "images/lettering.jpg", size: 80, alt: "Fun Stuff" },
+        { src: "images/diplom.mp4", size: 80, alt: "Fun Stuff", fullWidth: true, noSound: true, insertAfter: 2 },
+        { src: "images/sommer_poster.jpg", size: 70, alt: "Fun Stuff" }
+      ],
+      rightColumn: [
+        { src: "images/CommonSoil_Poster.jpg", size: 65, alt: "Fun Stuff" },
+                { src: "images/Flodo.mp4", size: 85, alt: "Fun Stuff", noSound: true},
+
+        
+      ]
+    },
+    "GEWERBEPARK SÜD": {
+      leftColumn: [
+        { src: "images/GS_Cover.png", size: 75, alt: "Card Game" },
+         { src: "images/GS_2_karten.png", size: 62, alt: "Card Game" }
+      ],
+      rightColumn: [
+        { src: "images/GS_5_karten.png", size: 80, alt: "Card Game" },
+        { src: "images/gewerbepark_cards.png", size: 65, alt: "Card Game", fullWidth: true, insertAfter: 1 },
+                { src: "images/GS_3_karten.png", size: 75, alt: "Card Game" },
+
+      ]
+    },
+    "PROCESS JOURNAL": {
+      leftColumn: [
+        { src: "images/PJ_cover.jpg", size: 85, alt: "Process Journal", fullWidth: true, insertAfter: 0},
+        { src: {
+        sequence: true,
+        folder: "images/PJ_gif",
+        frameCount: 109,
+        prefix: "PJ_gif",
+        digits: 3,
+        extension: "png",
+        startIndex: 0,
+        fps: 24,
+        loop: true,
+        alt: "Process Journal Animation"
+      },
+      size: 80,
+      alt: "Process Journal",
+      fullWidth: true, 
+      insertAfter: 1
+    },
+            { src: "images/PJ_spine.jpg", size: 90, alt: "Process Journal" },
+            { src: "images/PJ_spread.jpg", size: 80, alt: "Process Journal", fullWidth: true, insertAfter: 3},
+            { src: "images/PJ_freedom.jpg", size: 120, alt: "Process Journal" },
+
+      ],
+      rightColumn: [
+        { src: "images/PJ_children.jpg", size: 90, alt: "Process Journal" },
+        { src: "images/PJ_ecke.jpg", size: 55, alt: "Process Journal" }
+      ]
+    }
   };
 
   // Inner circles configuration - customize for each project
@@ -45,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Concept, Design", position: "20%", circleIndex: 0 },
+        { text: "Concept, Design,", position: "20%", circleIndex: 0 },
         { text: "Animation", position: "22%", circleIndex: 1 },
         { text: "2025 with", position: "81%", circleIndex: 3 },
         { text: "Nora Eros and Margarethe Wirnsberger", position: "82%", circleIndex: 2 }
@@ -53,82 +254,73 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     "VINYLS FOR BEXXX": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
-hangingCircles: [2, 3],
+      hangingCircles: [2, 3],
       textParts: [
-        { text: "2025 with", position: "25%", circleIndex: 0 },
-        { text: "Nora Ertl and Margarethe Wirnsberger", position: "25%", circleIndex: 1 },
-        { text: "2024", position: "75%", circleIndex: 2 },
-        { text: "Music", position: "75%", circleIndex: 3 }
+        { text: "Concept, Design,", position: "20%", circleIndex: 0 },
+        { text: "Photography", position: "17%", circleIndex: 1 },
+        { text: "2024", position: "82%", circleIndex: 3 },
+        { text: "Solo Project", position: "80%", circleIndex: 2 }
       ]
     },
-    "AXIS MUSIC FESTIVAL": {
+    "AXIS FESTIVAL": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Brand Identity", position: "25%", circleIndex: 0 },
-        { text: "Digital Design", position: "25%", circleIndex: 1 },
-        { text: "2024", position: "75%", circleIndex: 2 },
-        { text: "Festival", position: "75%", circleIndex: 3 }
+        { text: "Concept, Design,", position: "20%", circleIndex: 0 },
+        { text: "Animation", position: "22%", circleIndex: 1 },
+        { text: "2024 with", position: "81%", circleIndex: 3 },
+        { text: "Verena Müllner", position: "79%", circleIndex: 2 }
       ]
     },
-    "SYSTEMATIC POISON": {
+    
+    "DISPUTED TERRITORIES": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Editorial", position: "25%", circleIndex: 0 },
-        { text: "Typography", position: "25%", circleIndex: 1 },
-        { text: "2023", position: "75%", circleIndex: 2 },
-        { text: "Editorial", position: "75%", circleIndex: 3 }
+        { text: "Research, Concept,", position: "20%", circleIndex: 0 },
+        { text: "Design, Code", position: "22%", circleIndex: 1 },
+        { text: "2025 — today", position: "81%", circleIndex: 3 },
+        { text: "Solo Project", position: "82%", circleIndex: 2 }
       ]
     },
-    "FOLIO MAGAZIN": {
+    "GEWERBEPARK SÜD": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Layout Design", position: "25%", circleIndex: 0 },
-        { text: "Art Direction", position: "25%", circleIndex: 1 },
-        { text: "2024", position: "75%", circleIndex: 2 },
-        { text: "Magazine", position: "75%", circleIndex: 3 }
-      ]
-    },
-    "DADDY ISSUES": {
-      circleRadii: [0.935, 0.885, 0.95, 0.9],
-      hangingCircles: [2, 3],
-      textParts: [
-        { text: "Zine Design", position: "25%", circleIndex: 0 },
-        { text: "Concept", position: "25%", circleIndex: 1 },
-        { text: "2023", position: "75%", circleIndex: 2 },
-        { text: "Zine", position: "75%", circleIndex: 3 }
+        { text: "Concept,", position: "20%", circleIndex: 0 },
+        { text: "Design", position: "22%", circleIndex: 1 },
+        { text: "2025 with", position: "81%", circleIndex: 3 },
+        { text: "Solo Project", position: "82%", circleIndex: 2 }
       ]
     },
     "FUN STUFF": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Experiments", position: "25%", circleIndex: 0 },
-        { text: "Personal Work", position: "25%", circleIndex: 1 },
-        { text: "Various", position: "75%", circleIndex: 2 },
-        { text: "Projects", position: "75%", circleIndex: 3 }
+        { text: "Concept,", position: "30%", circleIndex: 0 },
+        { text: "Design", position: "32%", circleIndex: 1 },
+        { text: "2025", position: "67%", circleIndex: 3 },
+        { text: "Solo Project", position: "69%", circleIndex: 2 }
       ]
     },
     "TRUTH": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Research", position: "25%", circleIndex: 0 },
-        { text: "Visual Design", position: "25%", circleIndex: 1 },
-        { text: "2024", position: "75%", circleIndex: 2 },
-        { text: "Research", position: "75%", circleIndex: 3 }
+        { text: "Concept, Design,", position: "30%", circleIndex: 0 },
+        { text: "Production", position: "32%", circleIndex: 1 },
+        { text: "2025 with", position: "67%", circleIndex: 3 },
+        { text: "Janina Maulhardt", position: "70%", circleIndex: 2 }
       ]
     },
     "PROCESS JOURNAL": {
       circleRadii: [0.935, 0.885, 0.95, 0.9],
       hangingCircles: [2, 3],
       textParts: [
-        { text: "Documentation", position: "25%", circleIndex: 0 },
-        { text: "Sketches", position: "25%", circleIndex: 1 },
-        { text: "2023-2024", position: "75%", circleIndex: 2 },
-        { text: "Documentation", position: "75%", circleIndex: 3 }
+        { text: "Research, Concept,", position: "30%", circleIndex: 0 },
+        { text: "Design, Production", position: "32%", circleIndex: 1 },
+        { text: "2025 — 2026", position: "67%", circleIndex: 3 },
+        { text: "Solo Project", position: "70%", circleIndex: 2 }
       ]
     }
   };
@@ -177,6 +369,9 @@ hangingCircles: [2, 3],
     }
   }
 
+  // Store currently active project name globally
+  let activeProjectName = null;
+
   // Function to update the center text
   function updateCenterText(projectName) {
     const centerText = document.querySelector(".mono.center");
@@ -184,6 +379,7 @@ hangingCircles: [2, 3],
     if (!centerText) return;
     
     const description = projectDescriptions[projectName] || "WORK";
+    activeProjectName = projectName; // Store the active project name
     
     // Add fade effect
     centerText.style.opacity = "0";
@@ -197,10 +393,14 @@ hangingCircles: [2, 3],
       if (arrow) {
         if (projectName && projectName !== "WORK") {
           arrow.style.display = "block";
-          arrow.href = `project.html?name=${encodeURIComponent(projectName)}`;
+          // Position arrow below text with consistent gap
           setTimeout(() => {
+            const textRect = centerText.getBoundingClientRect();
+            const gap = window.innerHeight * 0.05; // 3vh gap between text and arrow
+            const arrowTop = textRect.bottom + gap;
+            arrow.style.top = arrowTop + 'px';
             arrow.style.opacity = "1";
-          }, 100);
+          }, 50);
         } else {
           arrow.style.display = "none";
         }
@@ -213,10 +413,24 @@ hangingCircles: [2, 3],
     const innerCirclesContainer = document.getElementById("innerCircles");
     if (!innerCirclesContainer) return;
     
-    const config = innerCirclesConfig[projectName];
+    let config = innerCirclesConfig[projectName];
     
-    // If no project selected or no config, fade out
-    if (!projectName || !config) {
+    // If no config exists for this project, use a default configuration
+    if (!config && projectName) {
+      config = {
+        circleRadii: [0.935, 0.885, 0.95, 0.9],
+        hangingCircles: [2, 3],
+        textParts: [
+          { text: "Design", position: "25%", circleIndex: 0 },
+          { text: "Project", position: "25%", circleIndex: 1 },
+          { text: "2025", position: "75%", circleIndex: 2 },
+          { text: "Work", position: "75%", circleIndex: 3 }
+        ]
+      };
+    }
+    
+    // If no project selected, fade out
+    if (!projectName) {
       innerCirclesContainer.style.opacity = "0";
       setTimeout(() => {
         innerCirclesContainer.innerHTML = "";
@@ -343,8 +557,9 @@ hangingCircles: [2, 3],
         const currentRotation = startRotation + (totalRotation * easeProgress);
         group.style.transform = `rotate(${currentRotation}deg)`;
         
-        // Fade in opacity faster - reaches full opacity at 50% of rotation time
-        const opacityProgress = Math.min(progress * 2.5, 1);
+        // Fade in opacity starting at 40% of rotation, reaching full opacity at 100%
+        // This creates a delayed fade-in that completes when rotation completes
+        const opacityProgress = Math.max(0, Math.min((progress - 0.4) / 0.6, 1));
         const currentOpacity = startOpacity + (endOpacity - startOpacity) * opacityProgress;
         textEl.style.opacity = currentOpacity;
         
@@ -434,8 +649,6 @@ hangingCircles: [2, 3],
     let outerRadius = Math.max((size / 2) * factor * bigCircleRadiusAdjustment, 150);
     const cx = rect.width / 2;
     const cy = rect.height / 2;
-    
-  // debug: circle setup info removed for production
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
@@ -779,99 +992,6 @@ hangingCircles: [2, 3],
     // attach svg to ROOT
     ROOT.appendChild(svg);
 
-    // Debug overlay: draw start/center/end markers and log metrics when ?debug is in the URL
-    try {
-  // debug overlay disabled in production; set to true for diagnostics
-  const debug = false;
-  if (debug) {
-        const pathLen = path.getTotalLength();
-        console.group('circle-debug');
-        console.log('outerRadius', outerRadius, 'pathLen', pathLen, 'totalLabelLength', totalLabelLength, 'gap', gap);
-
-  const dbg = document.createElementNS(svgNS, 'g');
-        dbg.setAttribute('class', 'debug-overlay');
-  // Append to rotating group so markers rotate with text
-  group.appendChild(dbg);
-
-        // compute starts/centers/ends again (same logic used above)
-  let pos = gap / 2; // start at half-gap
-        labels.forEach((l, i) => {
-          const start = pos;
-          const center = start + labelLengths[i] / 2;
-          const end = start + labelLengths[i];
-          pos += labelLengths[i] + gap;
-
-          console.log(i, { text: l.text, start: Math.round(start), center: Math.round(center), end: Math.round(end), len: Math.round(labelLengths[i]) });
-
-          const s = path.getPointAtLength(start + seamOffset);
-          const c = path.getPointAtLength(center + seamOffset);
-          const e = path.getPointAtLength(end + seamOffset);
-          // Also sample the text-only path (if present) to show seam buffer
-          let ts = null, tc = null, te = null;
-          try {
-            const textPathNode = defs.querySelector(`#${textPathRef}`);
-            if (textPathNode) {
-              ts = textPathNode.getPointAtLength(start + textSeam);
-              tc = textPathNode.getPointAtLength(center + textSeam);
-              te = textPathNode.getPointAtLength(end + textSeam);
-            }
-          } catch (err) { /* ignore */ }
-
-          // start marker (red)
-          const ms = document.createElementNS(svgNS, 'circle');
-          ms.setAttribute('cx', s.x);
-          ms.setAttribute('cy', s.y);
-          ms.setAttribute('r', 4);
-          ms.setAttribute('fill', 'rgba(220,50,50,0.9)');
-          dbg.appendChild(ms);
-
-          // center marker (green)
-          const mc = document.createElementNS(svgNS, 'circle');
-          mc.setAttribute('cx', c.x);
-          mc.setAttribute('cy', c.y);
-          mc.setAttribute('r', 3);
-          mc.setAttribute('fill', 'rgba(50,180,50,0.9)');
-          dbg.appendChild(mc);
-
-          // text-path markers (small blue) so we can verify seam buffer
-          if (tc) {
-            const tmc = document.createElementNS(svgNS, 'circle');
-            tmc.setAttribute('cx', tc.x);
-            tmc.setAttribute('cy', tc.y);
-            tmc.setAttribute('r', 2);
-            tmc.setAttribute('fill', 'rgba(30,120,200,0.9)');
-            dbg.appendChild(tmc);
-          }
-
-          // end marker (blue)
-          const me = document.createElementNS(svgNS, 'circle');
-          me.setAttribute('cx', e.x);
-          me.setAttribute('cy', e.y);
-          me.setAttribute('r', 4);
-          me.setAttribute('fill', 'rgba(50,100,220,0.9)');
-          dbg.appendChild(me);
-
-          // draw thin tick at section boundary after each label (for visualizing sections)
-          const boundaryAngle = startAngle + ((end + gap) / circumference) * 2 * Math.PI; // end of label + gap boundary
-          const bx0 = cx + (outerRadius - 6) * Math.cos(boundaryAngle);
-          const by0 = cy + (outerRadius - 6) * Math.sin(boundaryAngle);
-          const bx1 = cx + (outerRadius + 6) * Math.cos(boundaryAngle);
-          const by1 = cy + (outerRadius + 6) * Math.sin(boundaryAngle);
-          const tick = document.createElementNS(svgNS, 'line');
-          tick.setAttribute('x1', bx0);
-          tick.setAttribute('y1', by0);
-          tick.setAttribute('x2', bx1);
-          tick.setAttribute('y2', by1);
-          tick.setAttribute('stroke', 'rgba(0,0,0,0.25)');
-          tick.setAttribute('stroke-width', '1');
-          dbg.appendChild(tick);
-        });
-        console.groupEnd('circle-debug');
-      }
-    } catch (err) {
-      console.warn('debug overlay error', err);
-    }
-
       // rotation state
   let rotation = 0;
 
@@ -1083,11 +1203,78 @@ hangingCircles: [2, 3],
   let resizeTimer = null;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => circles.forEach(c => c.recompute()), 100);
+    resizeTimer = setTimeout(() => {
+      circles.forEach(c => c.recompute());
+      // Also update inner circles if a project is selected
+      if (activeProjectName) {
+        updateInnerCircles(activeProjectName, 0, 0);
+      }
+    }, 100);
   });
+
+  // Click on ABOUT text in top right
+  const aboutElement = document.querySelector(".mono.right");
+  console.log("ABOUT element found:", aboutElement);
+  if (aboutElement) {
+    aboutElement.addEventListener("click", (e) => {
+      console.log("ABOUT clicked!");
+      if (isDetailViewActive) {
+        console.log("Detail view active, returning");
+        return;
+      }
+      
+      e.stopPropagation();
+      e.preventDefault();
+      
+      console.log("Processing ABOUT click...");
+      
+      // Deactivate all circles
+      const big = circles.find(c => c.el.id === "bigCircle");
+      if (big && big.items) {
+        big.items.forEach(i => i.classList.remove("active"));
+      }
+      const circlesElement = document.querySelector(".circles");
+      const allSvgTexts = circlesElement.querySelectorAll('svg text');
+      allSvgTexts.forEach(text => text.classList.remove('active'));
+      
+      // Show ABOUT text directly
+      const centerText = document.querySelector(".mono.center");
+      if (centerText) {
+        centerText.textContent = ABOUT_TEXT;
+        console.log("Set center text to:", ABOUT_TEXT);
+      }
+      
+      // Hide arrow
+      const arrow = document.getElementById('projectArrow');
+      if (arrow) arrow.style.display = 'none';
+      
+      // Clear background and inner circles
+      updateBackgroundImage(null);
+      updateInnerCircles(null);
+    });
+  } else {
+    console.error("ABOUT element NOT found!");
+  }
 
   // Click outside circle to reset to "WORK"
   document.addEventListener("click", (e) => {
+    // Don't reset if clicking on arrow or if in detail view
+    const arrow = document.getElementById('projectArrow');
+    const isArrowClick = arrow && (arrow.contains(e.target) || e.target.closest('#projectArrow, #arrowSvg, #arrowPath'));
+    
+    if (isArrowClick) {
+      return;
+    }
+    if (isDetailViewActive) {
+      return;
+    }
+    
+    // Check if click is on ABOUT
+    const aboutElement = document.querySelector(".mono.right");
+    if (aboutElement && aboutElement.contains(e.target)) {
+      return;
+    }
+    
     // Check if click is outside the circles area
     const circlesElement = document.querySelector(".circles");
     if (circlesElement && !circlesElement.contains(e.target)) {
@@ -1107,4 +1294,892 @@ hangingCircles: [2, 3],
       updateInnerCircles(null);
     }
   });
+
+  // Project detail page functionality
+  let currentProjectName = null;
+  let isDetailViewActive = false;
+
+  // Function to convert project name to ID
+  function projectNameToId(name) {
+    return 'project-' + name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  }
+
+  // Function to update arrow direction
+  function updateArrowDirection(isBack) {
+    const arrowPath = document.getElementById('arrowPath');
+    const arrow = document.getElementById('projectArrow');
+    if (arrowPath) {
+      if (isBack) {
+        // Back arrow (pointing left)
+        arrowPath.setAttribute('d', 'M19 12L5 12M5 12L12 5M5 12L12 19');
+      } else {
+        // Forward arrow (pointing right)
+        arrowPath.setAttribute('d', 'M5 12L19 12M19 12L12 5M19 12L12 19');
+        // Animate arrow moving down when switching to forward (opening detail)
+        if (arrow && !isBack) {
+          const currentTop = parseFloat(arrow.style.top) || 0;
+          arrow.style.top = (currentTop + 30) + 'px';
+        }
+      }
+    }
+  }
+
+  // Function to open project detail page
+  function openProjectDetail(projectName) {
+    currentProjectName = projectName;
+    const projectId = projectNameToId(projectName);
+    let detailSection = document.getElementById(projectId);
+    const circlesElement = document.getElementById('circlesRoot');
+    
+    // If detail section doesn't exist, create it dynamically
+    if (!detailSection) {
+      if (projectDetailImages[projectName]) {
+        detailSection = createProjectDetailSection(projectName, projectId);
+      } else {
+        // Create a placeholder detail section with a message
+        const main = document.querySelector('.stage');
+        detailSection = document.createElement('div');
+        detailSection.className = 'project-detail';
+        detailSection.id = projectId;
+        detailSection.innerHTML = `
+          <div class="project-columns">
+            <div class="project-column" style="grid-column: 1 / -1; text-align: center; padding: 20vh 5vw;">
+              <p style="font-family: 'RobotoMonoLocal', monospace; font-size: calc(0.6rem + 0.4vw);">
+                NO IMAGES CONFIGURED FOR "${projectName}"<br><br>
+                ADD IMAGES IN THE projectDetailImages CONFIGURATION
+              </p>
+            </div>
+          </div>
+        `;
+        main.appendChild(detailSection);
+      }
+    }
+    
+    if (detailSection) {
+      detailSection.classList.add('active');
+      // Hide circles
+      if (circlesElement) {
+        circlesElement.classList.add('hide-circles');
+      }
+      // Change arrow to back direction
+      updateArrowDirection(true);
+      isDetailViewActive = true;
+      // Don't modify history - just change the view
+      
+      // Update center text to detail description if available
+      const centerText = document.querySelector('.mono.center');
+      const arrow = document.getElementById('projectArrow');
+      if (centerText && projectDetailDescriptions[projectName]) {
+        centerText.textContent = projectDetailDescriptions[projectName];
+        // Reposition arrow after text change
+        if (arrow) {
+          setTimeout(() => {
+            const textRect = centerText.getBoundingClientRect();
+            const gap = window.innerHeight * ARROW_TEXT_GAP;
+            const arrowTop = textRect.bottom + gap;
+            arrow.style.top = arrowTop + 'px';
+          }, 50);
+        }
+      }
+      
+      // Play all videos in the opened project
+      detailSection.querySelectorAll('video').forEach(video => {
+        video.play().catch(err => {
+          // Silently handle autoplay prevention
+        });
+      });
+      
+      // Set spacer heights for the newly opened project
+      setTimeout(setSpacerHeights, 100);
+    }
+  }
+
+  // Helper function to check if a file is a video
+  function isVideo(src) {
+    return src.toLowerCase().endsWith('.mov') || 
+           src.toLowerCase().endsWith('.mp4') || 
+           src.toLowerCase().endsWith('.webm');
+  }
+
+  // Helper function to generate frame paths from pattern
+  function generateFramePaths(folder, frameCount, prefix = '', digits = 4, extension = 'png', startIndex = 0) {
+    const frames = [];
+    for (let i = startIndex; i < startIndex + frameCount; i++) {
+      const frameNumber = String(i).padStart(digits, '0');
+      frames.push(`${folder}/${prefix}${frameNumber}.${extension}`);
+    }
+    return frames;
+  }
+
+  // Helper function to check if it's a PNG sequence config
+  function isPNGSequence(item) {
+    return item.sequence && (Array.isArray(item.frames) || item.folder);
+  }
+
+  // Helper function to create PNG sequence player
+  function createPNGSequence(config, size) {
+    const container = document.createElement('div');
+    container.className = 'png-sequence-container';
+    container.setAttribute('data-size', size);
+    
+    const img = document.createElement('img');
+    img.className = 'png-sequence-frame';
+    
+    // Generate frames if folder pattern is used
+    const frames = config.frames || generateFramePaths(
+      config.folder,
+      config.frameCount,
+      config.prefix || '',
+      config.digits || 4,
+      config.extension || 'png',
+      config.startIndex || 0
+    );
+    
+    img.src = frames[0];
+    img.alt = config.alt || 'Animation';
+    
+    container.appendChild(img);
+    
+    // Animation settings
+    const fps = config.fps || 24;
+    const loop = config.loop !== false; // default true
+    const frameDelay = 1000 / fps;
+    
+    let currentFrame = 0;
+    let animationInterval;
+    let preloadedImages = [];
+    let isPreloaded = false;
+    
+    // Preload all images
+    function preloadImages() {
+      let loadedCount = 0;
+      frames.forEach((frameSrc, index) => {
+        const preloadImg = new Image();
+        preloadImg.src = frameSrc;
+        preloadedImages[index] = preloadImg;
+        preloadImg.onload = () => {
+          loadedCount++;
+          if (loadedCount === frames.length) {
+            isPreloaded = true;
+            playSequence();
+          }
+        };
+      });
+    }
+    
+    function playSequence() {
+      if (!isPreloaded) return;
+      
+      animationInterval = setInterval(() => {
+        currentFrame++;
+        if (currentFrame >= frames.length) {
+          if (loop) {
+            currentFrame = 0;
+          } else {
+            clearInterval(animationInterval);
+            return;
+          }
+        }
+        img.src = frames[currentFrame];
+      }, frameDelay);
+    }
+    
+    // Start preloading
+    preloadImages();
+    
+    // Store interval ID for cleanup if needed
+    container._animationInterval = animationInterval;
+    
+    return container;
+  }
+
+  // Helper function to create media element (img or video)
+  function createMediaElement(src, alt, size, isFullWidth = false, noSound = false) {
+    // Check if it's a PNG sequence object
+    if (typeof src === 'object' && isPNGSequence(src)) {
+      return createPNGSequence(src, size);
+    }
+    
+    if (typeof src === 'string' && isVideo(src)) {
+      console.log('Creating video element for:', src);
+      const video = document.createElement('video');
+      video.className = 'video-element';
+      video.src = src;
+      video.alt = alt;
+      video.setAttribute('data-size', size);
+      video.autoplay = false;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.controls = false;
+      video.preload = 'auto';
+      
+      // For full-width videos, use video-container; for column videos, use video-wrapper
+      if (isFullWidth) {
+        const container = document.createElement('div');
+        container.className = 'video-container';
+        container.setAttribute('data-size', size);
+        container.appendChild(video);
+        
+        // Only add sound button if video has sound
+        if (!noSound) {
+          // Create sound toggle button
+          const soundButton = document.createElement('button');
+          soundButton.textContent = 'SOUND OFF';
+          soundButton.setAttribute('aria-label', 'Toggle sound');
+          
+          soundButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            soundButton.textContent = video.muted ? 'SOUND OFF' : 'SOUND ON';
+          });
+          
+          soundButton.addEventListener('mouseenter', () => {
+            soundButton.style.background = '#111';
+            soundButton.style.color = '#f7f7f7';
+          });
+          
+          soundButton.addEventListener('mouseleave', () => {
+            soundButton.style.background = 'none';
+            soundButton.style.color = '#111';
+          });
+          
+          // Create button wrapper for centering below video
+          const buttonWrapper = document.createElement('div');
+          buttonWrapper.className = 'sound-button-wrapper';
+          
+          // Update button to be non-absolute positioned
+          soundButton.style.position = 'relative';
+          soundButton.className = 'sound-toggle-button';
+          soundButton.style.cssText = '';
+          
+          buttonWrapper.appendChild(soundButton);
+          container.appendChild(buttonWrapper);
+        }
+        return container;
+      } else {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'video-wrapper';
+        wrapper.setAttribute('data-size', size);
+        wrapper.appendChild(video);
+        
+        // Only add sound button if video has sound
+        if (!noSound) {
+          // Create sound toggle button
+          const soundButton = document.createElement('button');
+          soundButton.textContent = 'SOUND OFF';
+          soundButton.setAttribute('aria-label', 'Toggle sound');
+          
+          soundButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            soundButton.textContent = video.muted ? 'SOUND OFF' : 'SOUND ON';
+          });
+          
+          soundButton.addEventListener('mouseenter', () => {
+            soundButton.style.background = '#111';
+            soundButton.style.color = '#f7f7f7';
+          });
+          
+          soundButton.addEventListener('mouseleave', () => {
+            soundButton.style.background = 'none';
+            soundButton.style.color = '#111';
+          });
+          
+          // Create button wrapper for centering below video
+          const buttonWrapper = document.createElement('div');
+          buttonWrapper.className = 'sound-button-wrapper';
+          
+          // Remove inline styles, use the CSS class styling
+          soundButton.className = 'sound-toggle-button';
+          
+          buttonWrapper.appendChild(soundButton);
+          wrapper.appendChild(buttonWrapper);
+        }
+        return wrapper;
+      }
+    } else {
+      console.log('Creating image element for:', src);
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = alt;
+      img.setAttribute('data-size', size);
+      return img;
+    }
+  }
+
+  // Function to create project detail section dynamically from configuration
+  function createProjectDetailSection(projectName, projectId) {
+    const config = projectDetailImages[projectName];
+    if (!config) return null;
+    
+    const main = document.querySelector('.stage');
+    if (!main) return null;
+    
+    // Create detail section
+    const detailSection = document.createElement('div');
+    detailSection.className = 'project-detail';
+    detailSection.id = projectId;
+    
+    // Create columns container (grid)
+    const columnsDiv = document.createElement('div');
+    columnsDiv.className = 'project-columns';
+    
+    // Separate regular images from full-width images
+    let leftImages = config.leftColumn.filter(img => !img.fullWidth);
+    let rightImages = config.rightColumn.filter(img => !img.fullWidth);
+    let fullWidthImages = [];
+    
+    // Collect full-width images with their absolute position in the sequence
+    config.leftColumn.forEach((img, idx) => {
+      if (img.fullWidth) {
+        fullWidthImages.push({ ...img, originalIndex: idx, source: 'left' });
+      }
+    });
+    config.rightColumn.forEach((img, idx) => {
+      if (img.fullWidth) {
+        fullWidthImages.push({ ...img, originalIndex: idx, source: 'right' });
+      }
+    });
+    
+    // Sort by insertAfter position (now represents absolute position counting all images)
+    fullWidthImages.sort((a, b) => {
+      const insertDiff = (a.insertAfter || 999) - (b.insertAfter || 999);
+      if (insertDiff !== 0) return insertDiff;
+      // If insertAfter is the same, preserve original order within the same column
+      if (a.source === b.source) return a.originalIndex - b.originalIndex;
+      // Left column items come before right column items
+      return a.source === 'left' ? -1 : 1;
+    });
+    
+    // Build content sections
+    let currentLeftColumn = document.createElement('div');
+    currentLeftColumn.className = 'project-column left';
+    let leftTopSpacer = document.createElement('div');
+    leftTopSpacer.className = 'column-top-spacer';
+    currentLeftColumn.appendChild(leftTopSpacer);
+    
+    let currentRightColumn = document.createElement('div');
+    currentRightColumn.className = 'project-column right';
+    let rightTopSpacer = document.createElement('div');
+    rightTopSpacer.className = 'column-top-spacer';
+    currentRightColumn.appendChild(rightTopSpacer);
+    
+    let leftIdx = 0, rightIdx = 0;
+    let totalItemsPlaced = 0; // Count ALL items placed (including full-width)
+    
+    // Process all items in order by checking what should come next
+    while (leftIdx < leftImages.length || rightIdx < rightImages.length || fullWidthImages.length > 0) {
+      // Check if there's a full-width image that should be inserted at this position
+      let fullWidthsToInsertNow = fullWidthImages.filter(fw => fw.insertAfter === totalItemsPlaced);
+      
+      if (fullWidthsToInsertNow.length > 0) {
+        // Close current columns if they have any content (more than just the top spacer)
+        if (currentLeftColumn.children.length > 1 || currentRightColumn.children.length > 1) {
+          columnsDiv.appendChild(currentLeftColumn);
+          columnsDiv.appendChild(currentRightColumn);
+        }
+        
+        // Always start new columns for after full-width (whether we closed previous ones or not)
+        currentLeftColumn = document.createElement('div');
+        currentLeftColumn.className = 'project-column left after-break';
+        let leftTopSpacer = document.createElement('div');
+        leftTopSpacer.className = 'column-top-spacer';
+        leftTopSpacer.style.height = '0px'; // After-break columns have no top margin
+        currentLeftColumn.appendChild(leftTopSpacer);
+        
+        currentRightColumn = document.createElement('div');
+        currentRightColumn.className = 'project-column right after-break';
+        let rightTopSpacer = document.createElement('div');
+        rightTopSpacer.className = 'column-top-spacer';
+        rightTopSpacer.style.height = '0px'; // After-break columns have no top margin
+        currentRightColumn.appendChild(rightTopSpacer);
+        
+        // Add all full-width images for this position
+        fullWidthsToInsertNow.forEach((fullWidthToInsert, index) => {
+          const fullWidthWrapper = document.createElement('div');
+          // Only the very first image gets the first-image class
+          fullWidthWrapper.className = totalItemsPlaced === 0 && index === 0 
+            ? 'full-width-image-wrapper first-image' 
+            : 'full-width-image-wrapper';
+          const media = createMediaElement(fullWidthToInsert.src, fullWidthToInsert.alt, fullWidthToInsert.size, true, fullWidthToInsert.noSound);
+          media.classList.add('full-width-image');
+          fullWidthWrapper.appendChild(media);
+          columnsDiv.appendChild(fullWidthWrapper);
+          
+          totalItemsPlaced++; // Count this full-width image
+          
+          // Remove from fullWidthImages array
+          fullWidthImages = fullWidthImages.filter(fw => fw !== fullWidthToInsert);
+        });
+      } else {
+        // Add regular column images
+        let addedThisRound = false;
+        
+        if (leftImages[leftIdx]) {
+          const media = createMediaElement(leftImages[leftIdx].src, leftImages[leftIdx].alt, leftImages[leftIdx].size, false, leftImages[leftIdx].noSound);
+          currentLeftColumn.appendChild(media);
+          leftIdx++;
+          addedThisRound = true;
+        }
+        
+        if (rightImages[rightIdx]) {
+          const media = createMediaElement(rightImages[rightIdx].src, rightImages[rightIdx].alt, rightImages[rightIdx].size, false, rightImages[rightIdx].noSound);
+          console.log('=== APPENDING TO RIGHT COLUMN ===');
+          console.log('Media element:', media);
+          console.log('Media tagName:', media.tagName);
+          console.log('Media className:', media.className);
+          console.log('Media classList:', media.classList.toString());
+          currentRightColumn.appendChild(media);
+          console.log('After append - className:', media.className);
+          console.log('After append - classList:', media.classList.toString());
+          rightIdx++;
+          addedThisRound = true;
+        }
+        
+        if (addedThisRound) {
+          totalItemsPlaced++; // Count this row of column images as 1
+        } else {
+          // No more images to add
+          break;
+        }
+      }
+    }
+    
+    // Add final columns if they have any content
+    if (currentLeftColumn.children.length > 1 || currentRightColumn.children.length > 1) {
+      let leftBottomSpacer = document.createElement('div');
+      leftBottomSpacer.className = 'column-bottom-spacer';
+      currentLeftColumn.appendChild(leftBottomSpacer);
+      
+      let rightBottomSpacer = document.createElement('div');
+      rightBottomSpacer.className = 'column-bottom-spacer';
+      currentRightColumn.appendChild(rightBottomSpacer);
+      
+      columnsDiv.appendChild(currentLeftColumn);
+      columnsDiv.appendChild(currentRightColumn);
+    }
+    
+    // Add bottom padding to the last full-width wrapper if it exists
+    const lastFullWidth = columnsDiv.querySelector('.full-width-image-wrapper:last-child');
+    if (lastFullWidth) {
+      lastFullWidth.classList.add('last-full-width');
+    }
+    
+    detailSection.appendChild(columnsDiv);
+    main.appendChild(detailSection);
+    
+    return detailSection;
+  }
+
+  // Function to close project detail page
+  function closeProjectDetail() {
+    document.querySelectorAll('.project-detail').forEach(el => {
+      el.classList.remove('active');
+    });
+    
+    // Mute all videos when closing detail view
+    document.querySelectorAll('.project-detail video').forEach(video => {
+      video.muted = true;
+    });
+    
+    // Reset all sound buttons to "SOUND OFF"
+    document.querySelectorAll('.sound-toggle-button').forEach(button => {
+      button.textContent = 'SOUND OFF';
+    });
+    
+    // Restore center text to original description
+    const centerText = document.querySelector('.mono.center');
+    const arrow = document.getElementById('projectArrow');
+    if (centerText && currentProjectName && projectDescriptions[currentProjectName]) {
+      centerText.textContent = projectDescriptions[currentProjectName];
+      // Reposition arrow after text change
+      if (arrow) {
+        setTimeout(() => {
+          const textRect = centerText.getBoundingClientRect();
+          const gap = window.innerHeight * ARROW_TEXT_GAP;
+          const arrowTop = textRect.bottom + gap;
+          arrow.style.top = arrowTop + 'px';
+        }, 50);
+      }
+    }
+    
+    const circlesElement = document.getElementById('circlesRoot');
+    // Show circles again
+    if (circlesElement) {
+      circlesElement.classList.remove('hide-circles');
+    }
+    // Change arrow back to forward direction
+    updateArrowDirection(false);
+    isDetailViewActive = false;
+    // Don't clear currentProjectName - keep the state
+    // Don't modify history here - let the click handler manage it
+  }
+
+  // Handle arrow click - detect clicks in arrow area
+  let isNavigating = false;
+  document.addEventListener('click', (e) => {
+    // Get arrow position
+    const arrow = document.getElementById('projectArrow');
+    if (!arrow || arrow.style.display === 'none') return;
+    
+    // Check if click is on the arrow element itself or near it
+    const isArrowElement = e.target.closest('#projectArrow, #arrowSvg, #arrowPath');
+    
+    // Check if click is near arrow position (center bottom of screen)
+    const rect = arrow.getBoundingClientRect();
+    const clickX = e.clientX;
+    const clickY = e.clientY;
+    const arrowX = rect.left + rect.width / 2;
+    const arrowY = rect.top + rect.height / 2;
+    
+    // If click is within 40px of arrow center or on arrow element
+    const distance = Math.sqrt(Math.pow(clickX - arrowX, 2) + Math.pow(clickY - arrowY, 2));
+    if (distance < 40 || isArrowElement) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      
+      if (isNavigating) return false;
+      isNavigating = true;
+      
+      if (isDetailViewActive) {
+        // Currently in detail view, go back to circles
+        closeProjectDetail();
+        // Don't touch history at all
+      } else {
+        // Currently in circle view, open detail
+        if (activeProjectName && activeProjectName !== "WORK") {
+          openProjectDetail(activeProjectName);
+        }
+      }
+      
+      setTimeout(() => { isNavigating = false; }, 300);
+      return false;
+    }
+  }, true); // Use capture phase
+
+  // Function to set exact spacer height based on last image
+  function setSpacerHeights() {
+    document.querySelectorAll('.project-column').forEach(column => {
+      const topSpacer = column.querySelector('.column-top-spacer');
+      const bottomSpacer = column.querySelector('.column-bottom-spacer');
+      // Select ALL media elements: images, videos, PNG sequence images, and video wrappers
+      const mediaElements = column.querySelectorAll('img:not(.png-sequence-frame), video, .png-sequence-frame, .video-wrapper');
+      const isAfterBreak = column.classList.contains('after-break');
+      
+      console.log('=== PROCESSING COLUMN ===');
+      console.log('Column classes:', column.className);
+      console.log('Media elements found:', mediaElements.length);
+      console.log('All media elements:', Array.from(mediaElements).map(el => ({
+        tag: el.tagName,
+        classes: el.className,
+        offsetHeight: el.offsetHeight
+      })));
+      
+      if (mediaElements.length > 0) {
+        const firstMedia = mediaElements[0];
+        const lastMedia = mediaElements[mediaElements.length - 1];
+        
+        const updateSpacers = () => {
+          // Top spacer: Only apply responsive centering to first columns (not after-break)
+          if (topSpacer) {
+            if (isAfterBreak) {
+              topSpacer.style.height = '0px';
+            } else {
+              let firstMediaHeight = firstMedia.offsetHeight;
+              
+              console.log('=== UPDATE TOP SPACER ===');
+              console.log('First media element:', firstMedia);
+              console.log('offsetHeight:', firstMediaHeight);
+              
+              // For videos, wait if height is 0
+              if (firstMedia.tagName === 'VIDEO' && firstMediaHeight === 0 && firstMedia.readyState >= 1) {
+                console.log('Video has metadata but no height yet, retrying...');
+                setTimeout(updateSpacers, 50);
+                return;
+              }
+              
+              // For PNG sequences, wait if height is 0
+              if (firstMedia.classList.contains('png-sequence-frame') && firstMediaHeight === 0) {
+                console.log('PNG sequence frame has no height yet, retrying...');
+                setTimeout(updateSpacers, 50);
+                return;
+              }
+              
+              // For video wrappers, use the actual video height
+              if (firstMedia.classList.contains('video-wrapper')) {
+                const actualVideo = firstMedia.querySelector('video');
+                if (actualVideo) {
+                  firstMediaHeight = actualVideo.offsetHeight;
+                }
+              }
+              
+              const topSpacerHeight = (window.innerHeight / 2) - (firstMediaHeight / 2);
+              topSpacer.style.height = Math.max(0, topSpacerHeight) + 'px';
+              console.log('TOP SPACER SET:', {
+                element: firstMedia.tagName,
+                mediaHeight: firstMediaHeight,
+                windowHeight: window.innerHeight,
+                spacerHeight: Math.max(0, topSpacerHeight)
+              });
+            }
+          }
+          
+          // Bottom spacer
+          if (bottomSpacer) {
+            let lastMediaHeight = lastMedia.offsetHeight;
+            
+            if (lastMedia.tagName === 'VIDEO' && lastMediaHeight === 0 && lastMedia.readyState >= 1) {
+              setTimeout(updateSpacers, 50);
+              return;
+            }
+            
+            const bottomSpacerHeight = (window.innerHeight / 2) - (lastMediaHeight / 2);
+            bottomSpacer.style.height = Math.max(0, bottomSpacerHeight) + 'px';
+          }
+        };
+        
+        // Check if all media is loaded
+        const checkLoaded = () => {
+          return Array.from(mediaElements).every(element => {
+            if (element.tagName === 'IMG') {
+              return element.complete;
+            } else if (element.tagName === 'VIDEO') {
+              return element.readyState >= 1; // HAVE_METADATA
+            } else {
+              return element.offsetHeight > 0;
+            }
+          });
+        };
+        
+        if (checkLoaded()) {
+          updateSpacers();
+        } else {
+          // Wait for all media to load
+          const promises = Array.from(mediaElements).map(element => {
+            if (element.tagName === 'IMG') {
+              if (element.complete) return Promise.resolve();
+              return new Promise(resolve => {
+                element.addEventListener('load', resolve, { once: true });
+              });
+            } else if (element.tagName === 'VIDEO') {
+              if (element.readyState >= 1) return Promise.resolve();
+              return new Promise(resolve => {
+                element.addEventListener('loadedmetadata', resolve, { once: true });
+              });
+            } else {
+              return Promise.resolve();
+            }
+          });
+          
+          Promise.all(promises).then(() => {
+            // Add a small delay to ensure layout has settled
+            setTimeout(updateSpacers, 100);
+            // Also add another check after a bit more time for video containers
+            setTimeout(updateSpacers, 300);
+            setTimeout(updateSpacers, 500);
+          });
+        }
+      }
+    });
+    
+    // Handle first full-width image wrappers
+    document.querySelectorAll('.full-width-image-wrapper.first-image').forEach(wrapper => {
+      const media = wrapper.querySelector('.full-width-image, .video-container, .video-wrapper, video, .png-sequence-container, img');
+      
+      console.log('=== FIRST IMAGE WRAPPER ===');
+      console.log('Wrapper:', wrapper);
+      console.log('Media found:', media);
+      console.log('Media tagName:', media?.tagName);
+      
+      if (media) {
+        const updatePadding = () => {
+          let mediaHeight = media.offsetHeight;
+          
+          // For videos, skip if no height yet
+          if (media.tagName === 'VIDEO' && mediaHeight === 0 && media.readyState >= 1) {
+            console.log('Video has metadata but no height yet, retrying...');
+            setTimeout(updatePadding, 50);
+            return;
+          }
+          
+          if (mediaHeight === 0) {
+            console.log('Media height is 0, skipping');
+            return;
+          }
+          
+          const paddingTop = (window.innerHeight / 2) - (mediaHeight / 2);
+          console.log('Updating first-image padding:', {
+            mediaHeight,
+            windowHeight: window.innerHeight,
+            paddingTop
+          });
+          wrapper.style.paddingTop = Math.max(0, paddingTop) + 'px';
+        };
+        
+        // Check if media is loaded
+        if (media.tagName === 'VIDEO') {
+          console.log('Detected VIDEO, readyState:', media.readyState);
+          if (media.readyState >= 1) {
+            setTimeout(updatePadding, 50);
+            setTimeout(updatePadding, 200);
+            setTimeout(updatePadding, 400);
+          } else {
+            media.addEventListener('loadedmetadata', () => {
+              console.log('VIDEO loadedmetadata event fired');
+              setTimeout(updatePadding, 50);
+              setTimeout(updatePadding, 200);
+              setTimeout(updatePadding, 400);
+            }, { once: true });
+          }
+        } else if (media.tagName === 'IMG') {
+          console.log('Detected IMG, complete:', media.complete);
+          if (media.complete) {
+            updatePadding();
+          } else {
+            media.addEventListener('load', updatePadding, { once: true });
+          }
+        } else {
+          console.log('Other element type');
+          updatePadding();
+        }
+      }
+    });
+    
+    // Handle last full-width image wrappers (add bottom padding)
+    document.querySelectorAll('.full-width-image-wrapper.last-full-width').forEach(wrapper => {
+      const media = wrapper.querySelector('.full-width-image, .video-container, .video-wrapper, video, .png-sequence-container, img');
+      
+      if (media) {
+        const updatePadding = () => {
+          let mediaHeight = media.offsetHeight;
+          
+          if (media.tagName === 'VIDEO' && mediaHeight === 0 && media.readyState >= 1) {
+            setTimeout(updatePadding, 50);
+            return;
+          }
+          
+          if (mediaHeight === 0) return;
+          
+          const paddingBottom = (window.innerHeight / 2) - (mediaHeight / 2);
+          wrapper.style.paddingBottom = Math.max(0, paddingBottom) + 'px';
+        };
+        
+        if (media.tagName === 'VIDEO') {
+          if (media.readyState >= 1) {
+            setTimeout(updatePadding, 50);
+            setTimeout(updatePadding, 200);
+            setTimeout(updatePadding, 400);
+          } else {
+            media.addEventListener('loadedmetadata', () => {
+              setTimeout(updatePadding, 50);
+              setTimeout(updatePadding, 200);
+              setTimeout(updatePadding, 400);
+            }, { once: true });
+          }
+        } else if (media.tagName === 'IMG') {
+          if (media.complete) {
+            updatePadding();
+          } else {
+            media.addEventListener('load', updatePadding, { once: true });
+          }
+        } else {
+          updatePadding();
+        }
+      }
+    });
+    
+    // Fix margins for video-wrapper elements without sound buttons
+    document.querySelectorAll('.project-column').forEach(column => {
+      const wrappers = Array.from(column.querySelectorAll('.video-wrapper'));
+      wrappers.forEach((wrapper, idx) => {
+        // Check if this wrapper has a sound button
+        const hasSoundButton = wrapper.querySelector('.sound-button-wrapper');
+        
+        // Only modify wrappers without sound buttons
+        if (!hasSoundButton) {
+          if (idx === wrappers.length - 1) {
+            // Last wrapper in column gets no margin
+            wrapper.style.marginBottom = '0';
+          } else {
+            // Not the last wrapper, add margin
+            wrapper.style.marginBottom = '10vh';
+          }
+        }
+      });
+    });
+
+
+  }
+
+  // Pre-create all project detail sections on page load for smooth transitions
+  Object.keys(projectDetailImages).forEach(projectName => {
+    const projectId = projectNameToId(projectName);
+    const existingSection = document.getElementById(projectId);
+    // Remove existing section if it exists (to allow for config changes during development)
+    if (existingSection) {
+      existingSection.remove();
+    }
+    // Create new section from current config
+    createProjectDetailSection(projectName, projectId);
+  });
+
+  // Function to reposition arrow based on text height
+  function repositionArrow() {
+    const centerText = document.querySelector('.mono.center');
+    const arrow = document.getElementById('projectArrow');
+    if (centerText && arrow && arrow.style.display !== 'none') {
+      const textRect = centerText.getBoundingClientRect();
+      const gap = window.innerHeight * ARROW_TEXT_GAP;
+      const arrowTop = textRect.bottom + gap;
+      arrow.style.top = arrowTop + 'px';
+    }
+  }
+
+  // Set spacer heights initially and on resize
+  setTimeout(setSpacerHeights, 100);
+  window.addEventListener('resize', () => {
+    setSpacerHeights();
+    repositionArrow();
+  });
+  
+  // Manual fix for Flodo.mp4 margin in FUN STUFF project
+  setTimeout(() => {
+    const funStuffDetail = document.getElementById('project-fun-stuff');
+    if (funStuffDetail) {
+      const flodoWrapper = Array.from(funStuffDetail.querySelectorAll('.video-wrapper')).find(wrapper => {
+        const video = wrapper.querySelector('video');
+        return video && video.src.includes('Flodo.mp4');
+      });
+      if (flodoWrapper) {
+        flodoWrapper.style.marginBottom = '10vh';
+      }
+    }
+  }, 500);
+  
+  // Update spacers when opening detail view
+  const originalOpenDetail = openProjectDetail;
+  openProjectDetail = function(projectName) {
+    originalOpenDetail(projectName);
+    setTimeout(setSpacerHeights, 100);
+    
+    // Re-apply Flodo.mp4 fix when opening FUN STUFF
+    if (projectName === 'FUN STUFF') {
+      setTimeout(() => {
+        const funStuffDetail = document.getElementById('project-fun-stuff');
+        if (funStuffDetail) {
+          const flodoWrapper = Array.from(funStuffDetail.querySelectorAll('.video-wrapper')).find(wrapper => {
+            const video = wrapper.querySelector('video');
+            return video && video.src.includes('Flodo.mp4');
+          });
+          if (flodoWrapper) {
+            flodoWrapper.style.marginBottom = '10vh';
+          }
+        }
+      }, 200);
+    }
+  };
 });
