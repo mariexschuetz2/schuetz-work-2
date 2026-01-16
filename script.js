@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       ],
       rightColumn: [
-        { src: "images/Some_Animation_final.mp4", size: 70, alt: "Truth" },
+        { src: "images/Truth_SOME.mp4", size: 70, alt: "Truth" },
         { src: "images/siebdruck.mp4", size: 85, alt: "Truth", noSound: true },
                 { src: "images/Poster_aufzug.mp4", size: 80, alt: "Truth", noSound: true }
 
@@ -173,10 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
     
     "DISPUTED TERRITORIES": {
       leftColumn: [
-        { src: "images/karte.mp4", size: 80, alt: "Disputed Territories", noSound: true }
+        { src: "images/Karte.mp4", size: 80, alt: "Disputed Territories", noSound: true }
       ],
       rightColumn: [
-        { src: "images/pad.mp4", size: 80, alt: "Disputed Territories", noSound: true }
+        { src: "images/Pad.mp4", size: 80, alt: "Disputed Territories", noSound: true }
       ]
     },
     "FUN STUFF": {
