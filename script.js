@@ -1183,20 +1183,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // initialize all circles
   function init() {
-    circles.length = 0;
-    circleEls.forEach(el => {
-      const c = setupCircle(el);
-      if (c) circles.push(c);
-    });
+    try {
+      circles.length = 0;
+      circleEls.forEach(el => {
+        const c = setupCircle(el);
+        if (c) circles.push(c);
+      });
+      
+      // Mark circles as loaded for fade-in animation
+      setTimeout(() => {
+        if (ROOT) ROOT.classList.add('loaded');
+      }, 100);
+    } catch (error) {
+      console.error('Error initializing circles:', error);
+      // Still show circles even if there's an error
+      if (ROOT) ROOT.classList.add('loaded');
+    }
 
     // Don't mark any item as active initially - all should be at 100% opacity
   }
 
-  // Wait for fonts to be ready so measurements match actual rendered text
+  // Initialize immediately, then reinitialize when fonts are ready for accurate measurements
+  init();
+  
+  // Re-initialize when fonts load for perfect text measurements
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(init);
-  } else {
-    init();
+    document.fonts.ready.then(() => {
+      // Only reinitialize if fonts actually loaded
+      circles.forEach(c => {
+        if (c && c.recompute) {
+          try {
+            c.recompute();
+          } catch (e) {
+            console.error('Error recomputing circle:', e);
+          }
+        }
+      });
+    });
   }
 
   // recompute on resize

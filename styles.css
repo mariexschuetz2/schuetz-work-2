@@ -135,7 +135,11 @@ body{
   pointer-events:none; /* items will override pointer-events for clicks */
   mix-blend-mode:difference;
   z-index:10;
+  opacity:0;
   transition:opacity 0.4s ease-in-out;
+}
+.circles.loaded{
+  opacity:1;
 }
 
 /* SVG text opacity - default 100%, but 50% when something is selected */
