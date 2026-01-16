@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
       leftColumn: [
         { src: "images/truth_leiter.jpg", size: 90, alt: "Truth" },
                 { src: "images/truth_detail.jpg", size: 70, alt: "Truth", fullWidth: true, insertAfter: 1 },
-        { src: "images/siebdruck_spray.jpg", size: 55, alt: "Truth" },
+        { src: "images/siebdruck_spray.JPG", size: 55, alt: "Truth" },
                 { src: "images/truth_hand.jpg", size: 80, alt: "Truth" }
 
       ],
