@@ -123,12 +123,12 @@ document.addEventListener("DOMContentLoaded", () => {
       leftColumn: [
         { src: "images/truth_leiter.jpg", size: 90, alt: "Truth" },
                 { src: "images/truth_detail.jpg", size: 70, alt: "Truth", fullWidth: true, insertAfter: 1 },
-        { src: "images/siebdruck_spray.JPG", size: 55, alt: "Truth" },
+        { src: "images/siebdruck_spray.jpg", size: 55, alt: "Truth" },
                 { src: "images/truth_hand.jpg", size: 80, alt: "Truth" }
 
       ],
       rightColumn: [
-        { src: "images/Truth_SOME.mp4", size: 70, alt: "Truth" },
+        { src: "images/Some_Animation_final.mp4", size: 70, alt: "Truth" },
         { src: "images/siebdruck.mp4", size: 85, alt: "Truth", noSound: true },
                 { src: "images/Poster_aufzug.mp4", size: 80, alt: "Truth", noSound: true }
 
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { src: "images/sommer_poster.jpg", size: 70, alt: "Fun Stuff" }
       ],
       rightColumn: [
-        { src: "images/CommonSoil_Poster.jpg", size: 65, alt: "Fun Stuff" },
+        { src: "images/CommonSoil_poster.jpg", size: 65, alt: "Fun Stuff" },
                 { src: "images/Flodo.mp4", size: 85, alt: "Fun Stuff", noSound: true},
 
         
