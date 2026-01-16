@@ -289,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
       textParts: [
         { text: "Concept,", position: "20%", circleIndex: 0 },
         { text: "Design", position: "22%", circleIndex: 1 },
-        { text: "2025 with", position: "81%", circleIndex: 3 },
+        { text: "2025", position: "81%", circleIndex: 3 },
         { text: "Solo Project", position: "82%", circleIndex: 2 }
       ]
     },
